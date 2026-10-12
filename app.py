@@ -4,12 +4,11 @@ import time
 # --- CONFIGURACIÓN DE LA PÁGINA ---
 st.set_page_config(page_title="💖 Mi Refugio | Okami & Sakura", page_icon="🌸", layout="centered")
 
-# --- ESTILOS CSS CON FONDO OSCURO Y MÁXIMO CONTRASTE ---
+# --- ESTILOS CSS CON MÁXIMO CONTRASTE Y CORRECCIÓN DE EXPANDERS ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap');
     
-    /* Forzar fondo oscuro en toda la app sin importar el modo del celular */
     .stApp {
         background-color: #0B0B0F !important;
     }
@@ -31,24 +30,23 @@ st.markdown("""
         font-weight: 700;
     }
 
-    /* Tarjetas estilo carta mágica */
+    /* Tarjetas y Post-its estilo mágico */
     .card {
-        padding: 30px;
+        padding: 25px;
         border-radius: 20px;
         background-color: #171721;
         box-shadow: 0 8px 25px rgba(255, 183, 197, 0.2);
-        text-align: center;
-        margin-bottom: 25px;
-        border: 2px solid rgba(255, 183, 197, 0.5);
+        margin-bottom: 20px;
+        border: 2px solid rgba(255, 183, 197, 0.4);
     }
     
     /* Botones personalizados estilo mágico */
     .stButton>button {
         width: 100%;
         border-radius: 15px;
-        height: 3.5em;
+        height: 3.2em;
         font-weight: 600;
-        font-size: 1.1em;
+        font-size: 1.05em;
         border: none;
         background-color: #FFB7C5 !important;
         color: #0B0B0F !important;
@@ -66,8 +64,16 @@ st.markdown("""
         color: #FFFFFF !important;
     }
 
-    /* Estilo para los inputs de texto y selectores */
-    .stTextInput>div>div>input, .stSelectbox>div>div>div {
+    /* Corrección visual para los desplegables (Expanders) en móvil */
+    .streamlit-expanderHeader {
+        background-color: #171721 !important;
+        color: #FFB7C5 !important;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 183, 197, 0.3);
+    }
+
+    /* Inputs y selectores */
+    .stTextInput>div>div>input, .stSelectbox>div>div>div, .stTextArea>div>div>textarea {
         background-color: #171721 !important;
         color: #FFFFFF !important;
         border: 1px solid #FFB7C5 !important;
@@ -96,13 +102,20 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# Inicializar listas personalizadas en session_state si no existen
+# Inicializar listas de tareas en session_state si no existen
 if 'tarjetas' not in st.session_state:
     st.session_state.tarjetas = [
         {"cat": "💼 Trabajo", "texto": "Calcular IVA y revisar F29"},
         {"cat": "🏠 Casa", "texto": "Ordenar la sala y preparar ropa de mañana"},
         {"cat": "🧘‍♀️ Salud", "texto": "Tomar agua y vitaminas / 10 min de pausa"},
         {"cat": "💰 Economía", "texto": "Revisar avances de Divina Pisada"}
+    ]
+
+# Inicializar Procesos / Post-its de Trabajo en session_state si no existen
+if 'procesos' not in st.session_state:
+    st.session_state.procesos = [
+        {"titulo": "📌 Cierre / Cálculo de IVA", "pasos": "1. Revisar Registro de Compras y Ventas en el SII.\n2. Verificar Remanente de Crédito Fiscal.\n3. Calcular débito y crédito fiscal (F29)."},
+        {"titulo": "📌 Liquidaciones y Remuneraciones", "pasos": "1. Verificar novedades de asistencia.\n2. Correr modelo en Python/Excel.\n3. Validar cotizaciones (AFP, Salud, CCAF)."}
     ]
 
 # 1. Semáforo de Energía Matutino (Opcional)
@@ -177,14 +190,14 @@ if menu == "🃏 Tarjetas Mágicas":
     else:
         st.success("🎉 ¡Increíble! Has liberado todas tus cartas pendientes por hoy. ¡Descansa y celebra!")
 
-# SECCIÓN 2: CREAR Y VER TODAS TUS LISTAS AGRUPADAS
+# SECCIÓN 2: CREAR Y VER TODAS TUS LISTAS AGRUPADAS (TODOS LOS OBJETIVOS JUNTOS)
 elif menu == "📝 Crear y Ver Mis Listas":
-    st.subheader("📝 Diseña y Agrupa tus Listas")
-    st.write("Aquí puedes agregar tus propias tareas y verlas organizadas por categoría:")
+    st.subheader("📝 Panel General: Todas tus Listas y Objetivos")
+    st.write("Aquí puedes agregar nuevas tareas y ver **todos tus objetivos juntos** agrupados por categoría:")
     
     with st.form("nueva_tarea_form"):
         cat_nueva = st.selectbox("Categoría:", ["💼 Trabajo", "🏠 Casa", "🧘‍♀️ Salud", "💰 Economía", "✨ Personal"])
-        texto_nuevo = st.text_input("¿Qué tarea o pendiente quieres agregar?")
+        texto_nuevo = st.text_input("¿Qué tarea u objetivo quieres agregar?")
         btn_agregar = st.form_submit_button("✨ Añadir a mis listas")
         
         if btn_agregar and texto_nuevo:
@@ -193,7 +206,7 @@ elif menu == "📝 Crear y Ver Mis Listas":
             st.rerun()
 
     st.markdown("---")
-    st.subheader("📂 Todas tus listas agrupadas")
+    st.subheader("📂 Tus Objetivos Agrupados por Categoría")
     
     if st.session_state.tarjetas:
         categorias_unicas = set(t['cat'] for t in st.session_state.tarjetas)
@@ -227,27 +240,34 @@ elif menu == "⏱️ Cronómetro / Foco":
             status.update(label="¡Tiempo cumplido! Sello liberado. Tómate un descanso bajo los cerezos. 🌸", state="complete", expanded=True)
             st.balloons()
 
-# SECCIÓN 4: PROCESOS DE TRABAJO
+# SECCIÓN 4: PROCESOS DE TRABAJO (AHORA EDITABLES COMO POST-ITS)
 elif menu == "📋 Procesos de Trabajo":
-    st.subheader("📋 Tus Guías y Pasos Fijos")
-    st.write("Fórmulas listas para que tu mente descanse de recordar detalles:")
+    st.subheader("📋 Tus Guías y Pasos Fijos (Post-its Editables)")
+    st.write("Crea y edita tus propias fórmulas y pasos para que tu mente descanse:")
     
-    with st.expander("📌 Pasos para Cierre / Cálculo de IVA"):
-        st.markdown("""
-        1. Revisar Registro de Compras y Ventas en el SII.
-        2. Verificar Remanente de Crédito Fiscal anterior.
-        3. Calcular débito y crédito fiscal (F29).
-        4. Revisar PPM e Impuesto Específico si corresponde.
-        5. Guardar comprobante de respaldo.
-        """)
+    # Formulario para agregar nuevo post-it de proceso
+    with st.form("nuevo_proceso_form"):
+        titulo_p = st.text_input("Título del Proceso (ej. 📌 Cierre F29):")
+        pasos_p = st.text_area("Pasos (escribe cada paso en una línea):")
+        btn_crear_p = st.form_submit_button("✨ Crear Nuevo Post-it")
+        
+        if btn_crear_p and titulo_p and pasos_p:
+            st.session_state.procesos.append({"titulo": titulo_p, "pasos": pasos_p})
+            st.success("¡Post-it de proceso guardado con éxito!")
+            st.rerun()
 
-    with st.expander("📌 Pasos para Liquidaciones / Imposiciones"):
-        st.markdown("""
-        1. Verificar novedades de asistencia o licencias.
-        2. Correr el modelo de cálculo en Excel / Python.
-        3. Validar cotizaciones previsionales (CCAF, AFP, Salud).
-        4. Emitir comprobantes y respaldar archivos.
-        """)
+    st.markdown("---")
+    st.subheader("📌 Tus Post-its Guardados")
+    
+    if st.session_state.procesos:
+        for idx, proc in enumerate(st.session_state.procesos):
+            with st.expander(proc['titulo']):
+                st.markdown(f"<div style='white-space: pre-wrap;'>{proc['pasos']}</div>", unsafe_allow_html=True)
+                if st.button("🗑️ Eliminar este post-it", key=f"del_proc_{idx}"):
+                    st.session_state.procesos.pop(idx)
+                    st.rerun()
+    else:
+        st.info("No tienes procesos guardados todavía. ¡Crea uno arriba!")
 
 # SECCIÓN 5: REGISTRO DE VICTORIAS
 elif menu == "✨ Registro de Victorias":
