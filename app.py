@@ -4,39 +4,42 @@ import time
 # --- CONFIGURACIÓN DE LA PÁGINA ---
 st.set_page_config(page_title="💖 Mi Refugio | Okami & Sakura", page_icon="🌸", layout="centered")
 
-# --- ESTILOS CSS CON MAYOR CONTRASTE PARA MÓVIL ---
+# --- ESTILOS CSS CON FONDO OSCURO Y MÁXIMO CONTRASTE ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap');
     
+    /* Forzar fondo oscuro en toda la app sin importar el modo del celular */
+    .stApp {
+        background-color: #0B0B0F !important;
+    }
+    
     html, body, [class*="st"] {
         font-family: 'Quicksand', sans-serif;
-    }
-    
-    .main {
-        background-color: #0D0D12;
-    }
-    
-    h1, h2, h3 {
         color: #FFFFFF !important;
-        font-weight: 700;
     }
     
     h1 {
         color: #FFB7C5 !important;
         text-align: center;
-        text-shadow: 0 2px 8px rgba(255, 183, 197, 0.4);
+        font-weight: 700;
+        text-shadow: 0 2px 10px rgba(255, 183, 197, 0.4);
+    }
+
+    h2, h3 {
+        color: #FFD1DC !important;
+        font-weight: 700;
     }
 
     /* Tarjetas estilo carta mágica */
     .card {
         padding: 30px;
         border-radius: 20px;
-        background-color: #1A1A24;
-        box-shadow: 0 8px 25px rgba(255, 183, 197, 0.15);
+        background-color: #171721;
+        box-shadow: 0 8px 25px rgba(255, 183, 197, 0.2);
         text-align: center;
         margin-bottom: 25px;
-        border: 2px solid rgba(255, 183, 197, 0.4);
+        border: 2px solid rgba(255, 183, 197, 0.5);
     }
     
     /* Botones personalizados estilo mágico */
@@ -47,25 +50,32 @@ st.markdown("""
         font-weight: 600;
         font-size: 1.1em;
         border: none;
-        background-color: #FFB7C5;
-        color: #121218;
+        background-color: #FFB7C5 !important;
+        color: #0B0B0F !important;
         transition: all 0.3s ease;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        box-shadow: 0 4px 12px rgba(255,183,197,0.3);
     }
     
     .stButton>button:hover {
-        background-color: #FF99A6;
-        color: white;
+        background-color: #FF99A6 !important;
+        color: white !important;
     }
 
-    /* Textos con alto contraste para que se lean perfecto en el celular */
+    /* Textos generales y párrafos con color blanco nítido */
     p, span, label, .stMarkdown, div {
-        color: #F5F5F7 !important;
+        color: #FFFFFF !important;
+    }
+
+    /* Estilo para los inputs de texto y selectores */
+    .stTextInput>div>div>input, .stSelectbox>div>div>div {
+        background-color: #171721 !important;
+        color: #FFFFFF !important;
+        border: 1px solid #FFB7C5 !important;
     }
 
     .firma {
         text-align: center;
-        color: #C0C0C0;
+        color: #A0A0B0;
         font-size: 0.85em;
         margin-top: 50px;
     }
