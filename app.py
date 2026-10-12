@@ -4,7 +4,7 @@ import time
 # --- CONFIGURACIÓN DE LA PÁGINA ---
 st.set_page_config(page_title="💖 Mi Refugio | Okami & Sakura", page_icon="🌸", layout="centered")
 
-# --- ESTILOS CSS LIMPIOS (Sin errores de llaves) ---
+# --- ESTILOS CSS LIMPIOS ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap');
@@ -85,6 +85,15 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
+# Inicializar listas personalizadas en session_state si no existen
+if 'tarjetas' not in st.session_state:
+    st.session_state.tarjetas = [
+        {"cat": "💼 Trabajo", "texto": "Calcular IVA y revisar F29"},
+        {"cat": "🏠 Casa", "texto": "Ordenar la sala y preparar ropa de mañana"},
+        {"cat": "🧘‍♀️ Salud", "texto": "Tomar agua y vitaminas / 10 min de pausa"},
+        {"cat": "💰 Economía", "texto": "Revisar avances de Divina Pisada"}
+    ]
+
 # 1. Semáforo de Energía Matutino
 if 'energia' not in st.session_state:
     st.session_state.energia = None
@@ -111,23 +120,21 @@ else:
         st.session_state.energia = None
         st.rerun()
 
-    # Menú Principal de Categorías
+    # Menú Principal de Categorías (¡Incluyendo la nueva vista de listas agrupadas!)
     st.markdown("---")
     st.subheader("🌸 Elige qué sección quieres visitar hoy:")
-    menu = st.radio("Opciones", ["🃏 Tarjetas Mágicas", "⏱️ Cronómetro / Foco", "📋 Procesos de Trabajo", "✨ Registro de Victorias"], label_visibility="collapsed")
+    menu = st.radio("Opciones", [
+        "🃏 Tarjetas Mágicas", 
+        "📝 Crear y Ver Mis Listas", 
+        "⏱️ Cronómetro / Foco", 
+        "📋 Procesos de Trabajo", 
+        "✨ Registro de Victorias"
+    ], label_visibility="collapsed")
 
     # SECCIÓN 1: TARJETAS (ESTILO TINDER / CARTAS CLOW)
     if menu == "🃏 Tarjetas Mágicas":
         st.subheader("🎯 Tus Pendientes del Día")
         st.write("Desliza o decide qué carta activar a continuación:")
-        
-        if 'tarjetas' not in st.session_state:
-            st.session_state.tarjetas = [
-                {"cat": "💼 Trabajo", "texto": "Calcular IVA y revisar F29"},
-                {"cat": "🏠 Casa", "texto": "Ordenar la sala y preparar ropa de mañana"},
-                {"cat": "🧘‍♀️ Salud", "texto": "Tomar agua y vitaminas / 10 min de pausa"},
-                {"cat": "💰 Economía", "texto": "Revisar avances de Divina Pisada"}
-            ]
 
         if st.session_state.tarjetas:
             tarjeta_actual = st.session_state.tarjetas[0]
@@ -153,7 +160,44 @@ else:
         else:
             st.success("🎉 ¡Increíble! Has liberado todas tus cartas pendientes por hoy. ¡Descansa y celebra!")
 
-    # SECCIÓN 2: CRONÓMETRO / FOCO
+    # SECCIÓN 2: CREAR Y VER TODAS TUS LISTAS AGRUPADAS
+    elif menu == "📝 Crear y Ver Mis Listas":
+        st.subheader("📝 Diseña y Agrupa tus Listas")
+        st.write("Aquí puedes agregar tus propias tareas y verlas organizadas por categoría:")
+        
+        # Formulario para agregar nueva tarea
+        with st.form("nueva_tarea_form"):
+            cat_nueva = st.selectbox("Categoría:", ["💼 Trabajo", "🏠 Casa", "🧘‍♀️ Salud", "💰 Economía", "✨ Personal"])
+            texto_nuevo = st.text_input("¿Qué tarea o pendiente quieres agregar?")
+            btn_agregar = st.form_submit_button("✨ Añadir a mis listas")
+            
+            if btn_agregar and texto_nuevo:
+                st.session_state.tarjetas.append({"cat": cat_nueva, "texto": texto_nuevo})
+                st.success(f"¡Guardado en {cat_nueva} con éxito!")
+                st.rerun()
+
+        st.markdown("---")
+        st.subheader("📂 Todas tus listas agrupadas")
+        
+        if st.session_state.tarjetas:
+            # Agrupar por categoría
+            categorias_unicas = set(t['cat'] for t in st.session_state.tarjetas)
+            for cat in sorted(categorias_unicas):
+                st.markdown(f"### {cat}")
+                for i, t in enumerate(st.session_state.tarjetas):
+                    if t['cat'] == cat:
+                        col_t, col_b = st.columns([4, 1])
+                        with col_t:
+                            st.markdown(f"- {t['texto']}")
+                        with col_b:
+                            if st.button("🗑️", key=f"del_{cat}_{i}"):
+                                st.session_state.tarjetas.pop(i)
+                                st.rerun()
+                st.markdown("")
+        else:
+            st.info("No tienes tareas pendientes guardadas en este momento. ¡Agrega una arriba!")
+
+    # SECCIÓN 3: CRONÓMETRO / FOCO
     elif menu == "⏱️ Cronómetro / Foco":
         st.subheader("⏱️ Tu Zona de Concentración Mágica")
         st.write("Elige cuántos minutos quieres dedicarle a una tarea sin distracciones:")
@@ -168,7 +212,7 @@ else:
                 status.update(label="¡Tiempo cumplido! Sello liberado. Tómate un descanso bajo los cerezos. 🌸", state="complete", expanded=True)
                 st.balloons()
 
-    # SECCIÓN 3: PROCESOS DE TRABAJO
+    # SECCIÓN 4: PROCESOS DE TRABAJO
     elif menu == "📋 Procesos de Trabajo":
         st.subheader("📋 Tus Guías y Pasos Fijos")
         st.write("Fórmulas listas para que tu mente descanse de recordar detalles:")
@@ -190,7 +234,7 @@ else:
             4. Emitir comprobantes y respaldar archivos.
             """)
 
-    # SECCIÓN 4: REGISTRO DE VICTORIAS
+    # SECCIÓN 5: REGISTRO DE VICTORIAS
     elif menu == "✨ Registro de Victorias":
         st.subheader("✨ Tu Libro de Victorias")
         st.write("Cada pequeño hechizo completado cuenta. Anota tu logro de hoy:")
